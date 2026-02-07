@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Help a pig hanging from a drone navigate through a Chinese city! Avoid power lines and birds in this addictive Flappy Bird style game.">
+    <meta name="keywords" content="pig drone game, flappy bird, casual game, mobile game, flying game">
+    <meta property="og:title" content="Pig Drone Flight - Fun Casual Flying Game">
+    <meta property="og:description" content="Help a pig hanging from a drone fly through the city! Avoid obstacles and beat your high score!">
+    <meta property="og:type" content="website">
+    <title>Pig Drone Flight - Fun Casual Flying Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        canvas {
+            border: 3px solid #333;
+            background: linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 100%);
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
+            transition: filter 0.05s;
+        }
+        
+        #score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        #highScore {
+            font-size: 18px;
+            color: #666;
+            margin: 5px 0;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            display: none;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        
+        #gameOver h2 {
+            color: #d9534f;
+            margin-bottom: 15px;
+        }
+        
+        #gameOver button {
+            background: #5cb85c;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        #gameOver button:hover {
+            background: #4cae4c;
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 10;
+            max-width: 400px;
+        }
+        
+        #startScreen h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        #startScreen .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        #startScreen .how-to-play {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        #startScreen .how-to-play h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        #startScreen .how-to-play ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        #startScreen .how-to-play li {
+            padding: 8px 0;
+            color: #555;
+        }
+        
+        #startScreen .how-to-play li:before {
+            content: "✓ ";
+            color: #5cb85c;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        #startButton {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        
+        #startButton:hover {
+            transform: scale(1.05);
+        }
+        
+        #startButton:active {
+            transform: scale(0.95);
+        }
+        
+        #footer {
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            #startScreen {
+                padding: 20px;
+                max-width: 90%;
+            }
+            
+            #startScreen h1 {
+                font-size: 24px;
+            }
+            
+            #startButton {
+                padding: 12px 40px;
+                font-size: 20px;
+            }
+        }
+        
+        #instructions {
+            margin: 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <h1>🐷 Pig Drone Flight 🚁</h1>
+        <div id="instructions">Tap, Click, Space, WASD, or Arrow Keys to Fly • Avoid Power Lines & Birds!</div>
+        <div id="score">Score: 0</div>
+        <div id="highScore">High Score: 0</div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="startScreen">
+            <h1>🐷 Pig Drone Flight 🚁</h1>
+            <div class="subtitle">Help the pig fly through the city!</div>
+            
+            <div class="how-to-play">
+                <h3>🎮 How to Play</h3>
+                <ul>
+                    <li><strong>Tap</strong>, <strong>Click</strong>, <strong>Space</strong>, <strong>WASD</strong>, or <strong>Arrow Keys</strong> to fly</li>
+                    <li>Avoid electric <strong>power lines</strong></li>
+                    <li>Dodge flying <strong>birds</strong></li>
+                    <li>Don't hit the <strong>ground</strong></li>
+                    <li>Score points by passing obstacles!</li>
+                </ul>
+            </div>
+            
+            <button id="startButton">Start Game</button>
+        </div>
+        
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p id="finalScore"></p>
+            <p id="newHighScore" style="color: #f39c12; font-weight: bold; display: none;">🏆 New High Score! 🏆</p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+        
+        <div id="footer">
+            v1.0 | Best played on mobile and desktop
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let gameRunning = false;
+        let gameStarted = false;
+        let score = 0;
+        let highScore = localStorage.getItem('pigDroneHighScore') || 0;
+        let gameSpeed = 2;
+        
+        // Update high score display
+        document.getElementById('highScore').textContent = 'High Score: ' + highScore;
+        
+        // Drone and pig
+        const player = {
+            x: 150,
+            y: 300,
+            width: 60,
+            height: 80,
+            velocity: 0,
+            gravity: 0.35,  // Reduced for smoother, slower fall
+            flapPower: -7,   // Reduced for gentler upward movement
+            maxVelocity: 8   // Limit max fall/rise speed
+        };
+        
+        // Clouds for background
+        let clouds = [];
+        for (let i = 0; i < 5; i++) {
+            clouds.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                width: 80 + Math.random() * 60,
+                speed: 0.5 + Math.random() * 0.5
+            });
+        }
+        
+        // Buildings
+        let buildings = [];
+        for (let i = 0; i < 8; i++) {
+            buildings.push({
+                x: i * 150,
+                height: 100 + Math.random() * 70,  // Reduced from 150 + random 100
+                width: 80 + Math.random() * 40,
+                color: '#' + Math.floor(Math.random()*16777215).toString(16),
+                speed: 1.5
+            });
+        }
+        
+        // Speech bubbles
+        let speechBubbles = [];
+        let bubbleTimer = 0;
+        const phrases = [
+            "Is it a bird?",
+            "Is it a plane?",
+            "Oh no! It's a flying drone pig!",
+            "看! 飞猪!", // Look! Flying pig!
+            "不可思议!", // Incredible!
+            "天啊!" // Oh my!
+        ];
+        
+        // Power lines
+        let powerLines = [];
+        let powerLineTimer = 0;
+        
+        // Birds
+        let birds = [];
+        let birdTimer = 0;
+        
+        // Input handling - flappy bird style
+        const keys = {};
+        
+        // Start button
+        document.getElementById('startButton').addEventListener('click', () => {
+            document.getElementById('startScreen').style.display = 'none';
+            startGame();
+        });
+        
+        // Flap on spacebar, click, or any key
+        function flap() {
+            if (gameRunning) {
+                player.velocity = player.flapPower;
+                // Visual feedback - brief highlight
+                canvas.style.filter = 'brightness(1.1)';
+                setTimeout(() => {
+                    canvas.style.filter = 'brightness(1)';
+                }, 50);
+            }
+        }
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            // Flap on specific keys: WASD, Arrow Keys, or Space
+            if (gameStarted && (
+                e.key === ' ' || 
+                e.key === 'w' || e.key === 'W' || 
+                e.key === 'a' || e.key === 'A' ||
+                e.key === 's' || e.key === 'S' || 
+                e.key === 'd' || e.key === 'D' ||
+                e.key === 'ArrowUp' || 
+                e.key === 'ArrowDown' ||
+                e.key === 'ArrowLeft' ||
+                e.key === 'ArrowRight'
+            )) {
+                flap();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+        
+        // Mouse click to flap
+        canvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if (gameStarted) {
+                flap();
+            }
+        });
+        
+        canvas.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (gameStarted) {
+                flap();
+            }
+        });
+        
+        // Draw drone
+        function drawDrone(x, y) {
+            // Drone body
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x + 15, y - 5, 30, 8);
+            
+            // Propellers
+            ctx.fillStyle = '#666';
+            ctx.fillRect(x, y - 8, 15, 3);
+            ctx.fillRect(x + 45, y - 8, 15, 3);
+            
+            // Propeller blur effect
+            ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+            ctx.fillRect(x - 5, y - 12, 25, 2);
+            ctx.fillRect(x + 40, y - 12, 25, 2);
+            
+            // Rope
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x + 30, y + 3);
+            ctx.lineTo(x + 30, y + 25);
+            ctx.stroke();
+        }
+        
+        // Draw pig
+        function drawPig(x, y) {
+            y += 25; // Offset for rope
+            
+            // Pig body
+            ctx.fillStyle = '#FFB6C1';
+            ctx.beginPath();
+            ctx.ellipse(x + 30, y + 15, 20, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pig head
+            ctx.beginPath();
+            ctx.ellipse(x + 30, y, 12, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ears (cute pointy ears)
+            ctx.fillStyle = '#FFB6C1';
+            ctx.beginPath();
+            // Left ear
+            ctx.moveTo(x + 22, y - 8);
+            ctx.lineTo(x + 20, y - 15);
+            ctx.lineTo(x + 25, y - 6);
+            ctx.fill();
+            // Right ear
+            ctx.beginPath();
+            ctx.moveTo(x + 38, y - 8);
+            ctx.lineTo(x + 40, y - 15);
+            ctx.lineTo(x + 35, y - 6);
+            ctx.fill();
+            
+            // Inner ears (pink)
+            ctx.fillStyle = '#FFA6B1';
+            ctx.beginPath();
+            ctx.moveTo(x + 22, y - 8);
+            ctx.lineTo(x + 21, y - 12);
+            ctx.lineTo(x + 24, y - 7);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x + 38, y - 8);
+            ctx.lineTo(x + 39, y - 12);
+            ctx.lineTo(x + 36, y - 7);
+            ctx.fill();
+            
+            // Snout
+            ctx.fillStyle = '#FFA6B1';
+            ctx.beginPath();
+            ctx.ellipse(x + 30, y + 3, 6, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Nostrils
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(x + 27, y + 3, 1.5, 0, Math.PI * 2);
+            ctx.arc(x + 33, y + 3, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            ctx.beginPath();
+            ctx.arc(x + 26, y - 2, 2, 0, Math.PI * 2);
+            ctx.arc(x + 34, y - 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Legs
+            ctx.strokeStyle = '#FFB6C1';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x + 20, y + 25);
+            ctx.lineTo(x + 20, y + 32);
+            ctx.moveTo(x + 40, y + 25);
+            ctx.lineTo(x + 40, y + 32);
+            ctx.stroke();
+            
+            // Squiggly tail coming out between legs
+            ctx.strokeStyle = '#FFB6C1';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            const tailStartX = x + 30;
+            const tailStartY = y + 28;
+            // Create a curly squiggle
+            ctx.moveTo(tailStartX, tailStartY);
+            ctx.quadraticCurveTo(tailStartX - 3, tailStartY + 3, tailStartX - 1, tailStartY + 6);
+            ctx.quadraticCurveTo(tailStartX + 1, tailStartY + 9, tailStartX - 2, tailStartY + 12);
+            ctx.quadraticCurveTo(tailStartX - 4, tailStartY + 14, tailStartX - 1, tailStartY + 16);
+            ctx.stroke();
+            ctx.lineCap = 'butt';
+        }
+        
+        // Draw cloud
+        function drawCloud(x, y, width) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.arc(x, y, width * 0.3, 0, Math.PI * 2);
+            ctx.arc(x + width * 0.3, y - width * 0.1, width * 0.35, 0, Math.PI * 2);
+            ctx.arc(x + width * 0.6, y, width * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Draw bird
+        function drawBird(bird) {
+            const time = Date.now() * 0.01;
+            const wingFlap = Math.sin(time + bird.offset) * 8;
+            
+            // Bird body
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.ellipse(bird.x + 15, bird.y + 10, 12, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(bird.x + 25, bird.y + 8, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Beak
+            ctx.fillStyle = '#FFA500';
+            ctx.beginPath();
+            ctx.moveTo(bird.x + 30, bird.y + 8);
+            ctx.lineTo(bird.x + 36, bird.y + 8);
+            ctx.lineTo(bird.x + 30, bird.y + 11);
+            ctx.fill();
+            
+            // Eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bird.x + 27, bird.y + 7, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Wings
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.moveTo(bird.x + 15, bird.y + 10);
+            ctx.lineTo(bird.x - 5, bird.y + wingFlap);
+            ctx.lineTo(bird.x + 10, bird.y + 12);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(bird.x + 15, bird.y + 10);
+            ctx.lineTo(bird.x + 35, bird.y + wingFlap);
+            ctx.lineTo(bird.x + 20, bird.y + 12);
+            ctx.fill();
+        }
+        function drawBuilding(building) {
+            const x = building.x;
+            const y = canvas.height - building.height;
+            const w = building.width;
+            const h = building.height;
+            
+            // Main building body
+            ctx.fillStyle = building.color;
+            ctx.fillRect(x, y, w, h);
+            
+            // Windows
+            ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
+            const windowRows = Math.floor(h / 25);
+            const windowCols = Math.floor(w / 20);
+            for (let row = 1; row < windowRows; row++) {
+                for (let col = 0; col < windowCols; col++) {
+                    if (Math.random() > 0.3) { // Some windows are lit
+                        ctx.fillRect(x + col * 20 + 5, y + row * 25 + 5, 10, 15);
+                    }
+                }
+            }
+            
+            // Pagoda-style roof
+            ctx.fillStyle = '#8B0000';
+            ctx.beginPath();
+            ctx.moveTo(x - 10, y);
+            ctx.lineTo(x + w/2, y - 20);
+            ctx.lineTo(x + w + 10, y);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Roof accent
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.moveTo(x - 8, y);
+            ctx.lineTo(x + w/2, y - 18);
+            ctx.lineTo(x + w + 8, y);
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Chinese characters on building
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            const chars = ['福', '商', '店', '茶', '酒', '楼'];
+            ctx.fillText(chars[Math.floor(building.x / 150) % chars.length], x + w/2, y + 40);
+        }
+        
+        // Draw speech bubble
+        function drawSpeechBubble(bubble) {
+            const padding = 10;
+            ctx.font = '14px Arial';
+            const textWidth = ctx.measureText(bubble.text).width;
+            const bubbleWidth = textWidth + padding * 2;
+            const bubbleHeight = 30;
+            
+            // Bubble
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(bubble.x, bubble.y, bubbleWidth, bubbleHeight, 10);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Pointer
+            ctx.beginPath();
+            ctx.moveTo(bubble.x + bubbleWidth / 2, bubble.y + bubbleHeight);
+            ctx.lineTo(bubble.x + bubbleWidth / 2 - 5, bubble.y + bubbleHeight + 10);
+            ctx.lineTo(bubble.x + bubbleWidth / 2 + 5, bubble.y + bubbleHeight + 10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Text
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText(bubble.text, bubble.x + bubbleWidth / 2, bubble.y + 20);
+        }
+        
+        // Draw power line
+        function drawPowerLine(line) {
+            // Poles
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(line.x, line.y, 8, line.height);
+            ctx.fillRect(line.x + line.width - 8, line.y, 8, line.height);
+            
+            // Crossbar
+            ctx.fillRect(line.x - 10, line.y, line.width + 20, 6);
+            
+            // Power lines
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            const sag = 15; // Line sag
+            
+            for (let i = 0; i < 3; i++) {
+                const yOffset = i * 12 + 15;
+                ctx.beginPath();
+                ctx.moveTo(line.x, line.y + yOffset);
+                ctx.quadraticCurveTo(
+                    line.x + line.width / 2, 
+                    line.y + yOffset + sag,
+                    line.x + line.width, 
+                    line.y + yOffset
+                );
+                ctx.stroke();
+            }
+            
+            // Danger zone (invisible collision area)
+            line.dangerZones = [];
+            for (let i = 0; i < 3; i++) {
+                const yOffset = i * 12 + 15;
+                line.dangerZones.push({
+                    x: line.x,
+                    y: line.y + yOffset - 5,
+                    width: line.width,
+                    height: sag + 10
+                });
+            }
+        }
+        
+        // Draw utility power pole - from ground up with electricity
+        function drawPowerLine(line) {
+            const poleX = line.x + line.width / 2 - 6;
+            const groundLevel = canvas.height - 30; // Lowered ground level (was -50)
+            const poleTop = groundLevel - line.height;
+            
+            // Wooden pole texture
+            ctx.fillStyle = '#8B6914';
+            ctx.fillRect(poleX, poleTop, 12, line.height);
+            
+            // Wood grain effect
+            ctx.strokeStyle = '#6B4E0F';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < line.height; i += 15) {
+                ctx.beginPath();
+                ctx.moveTo(poleX, poleTop + i);
+                ctx.lineTo(poleX + 12, poleTop + i);
+                ctx.stroke();
+            }
+            
+            // Crossbars (multiple levels)
+            const crossbarLevels = [0.3, 0.5, 0.7]; // Positions along pole
+            ctx.fillStyle = '#6B4E0F';
+            
+            crossbarLevels.forEach(level => {
+                const crossY = poleTop + line.height * level;
+                ctx.fillRect(poleX - 25, crossY - 3, 62, 6);
+                
+                // Insulators
+                ctx.fillStyle = '#4A4A4A';
+                ctx.beginPath();
+                ctx.arc(poleX - 20, crossY, 4, 0, Math.PI * 2);
+                ctx.arc(poleX + 6, crossY, 4, 0, Math.PI * 2);
+                ctx.arc(poleX + 32, crossY, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#6B4E0F';
+            });
+            
+            // Power lines with electricity effect
+            ctx.lineWidth = 2;
+            const time = Date.now() * 0.01;
+            
+            crossbarLevels.forEach((level, index) => {
+                const wireY = poleTop + line.height * level;
+                
+                // Main power lines (3 wires per crossbar)
+                for (let wire = 0; wire < 3; wire++) {
+                    const wireX = poleX - 20 + wire * 26;
+                    
+                    // Draw wire extending left and right
+                    ctx.strokeStyle = '#000';
+                    ctx.beginPath();
+                    ctx.moveTo(0, wireY);
+                    ctx.lineTo(canvas.width, wireY);
+                    ctx.stroke();
+                    
+                    // Electrical spark effect (random)
+                    if (Math.random() < 0.05) {
+                        ctx.strokeStyle = '#FFFF00';
+                        ctx.lineWidth = 3;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = '#FFFF00';
+                        
+                        const sparkX = wireX + (Math.random() - 0.5) * 30;
+                        ctx.beginPath();
+                        ctx.moveTo(sparkX, wireY);
+                        ctx.lineTo(sparkX + (Math.random() - 0.5) * 15, wireY + (Math.random() - 0.5) * 15);
+                        ctx.stroke();
+                        
+                        ctx.shadowBlur = 0;
+                        ctx.lineWidth = 2;
+                    }
+                }
+            });
+            
+            // Danger zones for collision
+            line.dangerZones = [];
+            
+            // Pole collision
+            line.dangerZones.push({
+                x: poleX - 2,
+                y: poleTop,
+                width: 16,
+                height: line.height
+            });
+            
+            // Wire collision zones (all wires across screen)
+            crossbarLevels.forEach(level => {
+                const wireY = poleTop + line.height * level;
+                line.dangerZones.push({
+                    x: 0,
+                    y: wireY - 4,
+                    width: canvas.width,
+                    height: 8
+                });
+            });
+        }
+        
+        // Create utility pole - from ground up with varying heights
+        function createPowerLine() {
+            const minHeight = 100;  // Reduced from 150
+            const maxHeight = 250;  // Reduced from 350
+            const height = Math.random() * (maxHeight - minHeight) + minHeight;
+            
+            powerLines.push({
+                x: canvas.width,
+                height: height,
+                width: 50,
+                dangerZones: [],
+                scored: false
+            });
+        }
+        
+        // Create bird
+        function createBird() {
+            const minY = 50;
+            const maxY = canvas.height - 200; // Keep birds in flyable area
+            
+            birds.push({
+                x: canvas.width,
+                y: Math.random() * (maxY - minY) + minY,
+                width: 40,
+                height: 20,
+                speed: gameSpeed + Math.random() * 1.5,
+                offset: Math.random() * Math.PI * 2 // For wing animation variation
+            });
+        }
+        
+        // Create speech bubble
+        function createSpeechBubble() {
+            const buildingIndex = Math.floor(Math.random() * buildings.length);
+            const building = buildings[buildingIndex];
+            
+            speechBubbles.push({
+                x: building.x + building.width / 2 - 50,
+                y: canvas.height - building.height - 50,
+                text: phrases[Math.floor(Math.random() * phrases.length)],
+                life: 180 // frames to display
+            });
+        }
+        
+        // Touch controls for mobile - tap to flap
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameStarted) {
+                flap();
+            }
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+        });
+        
+        // Check collision
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+        
+        // Update game
+        function update() {
+            if (!gameRunning) return;
+            
+            // Apply gravity (smoother flappy bird physics)
+            player.velocity += player.gravity;
+            
+            // Limit velocity for smoother movement
+            if (player.velocity > player.maxVelocity) {
+                player.velocity = player.maxVelocity;
+            }
+            if (player.velocity < -player.maxVelocity) {
+                player.velocity = -player.maxVelocity;
+            }
+            
+            player.y += player.velocity;
+            
+            // Check boundaries
+            if (player.y < 0) {
+                player.y = 0;
+                player.velocity = 0;
+            }
+            if (player.y > canvas.height - player.height - 30) { // Adjusted for lower ground/buildings
+                gameOver();
+                return;
+            }
+            
+            // Update clouds
+            clouds.forEach(cloud => {
+                cloud.x -= cloud.speed;
+                if (cloud.x < -cloud.width) {
+                    cloud.x = canvas.width;
+                    cloud.y = Math.random() * canvas.height;
+                }
+            });
+            
+            // Update buildings
+            buildings.forEach(building => {
+                building.x -= building.speed;
+                if (building.x < -building.width) {
+                    building.x = canvas.width + Math.random() * 100;
+                    building.height = 100 + Math.random() * 70;  // Reduced from 150 + random 100
+                    building.width = 80 + Math.random() * 40;
+                    building.color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                }
+            });
+            
+            // Update speech bubbles
+            bubbleTimer++;
+            if (bubbleTimer > 200 && Math.random() < 0.02) {
+                createSpeechBubble();
+                bubbleTimer = 0;
+            }
+            
+            speechBubbles = speechBubbles.filter(bubble => {
+                bubble.life--;
+                return bubble.life > 0;
+            });
+            
+            // Create power lines (less frequent for casual play)
+            powerLineTimer++;
+            if (powerLineTimer > 140) {
+                createPowerLine();
+                powerLineTimer = 0;
+            }
+            
+            // Create birds (spawn strategically to be avoidable)
+            birdTimer++;
+            if (birdTimer > 180 && Math.random() < 0.5) {
+                // Only spawn if not too close to a power line
+                let canSpawn = true;
+                for (let line of powerLines) {
+                    if (Math.abs(line.x - canvas.width) < 200) {
+                        canSpawn = false;
+                        break;
+                    }
+                }
+                if (canSpawn) {
+                    createBird();
+                    birdTimer = 0;
+                }
+            }
+            
+            // Update power lines
+            powerLines = powerLines.filter(line => {
+                line.x -= gameSpeed;
+                
+                // Check if player passed the pole (for scoring)
+                if (!line.scored && line.x + line.width < player.x) {
+                    line.scored = true;
+                    score++;
+                    document.getElementById('score').textContent = 'Score: ' + score;
+                    
+                    // Gentle difficulty increase
+                    if (score % 8 === 0 && gameSpeed < 4) {
+                        gameSpeed += 0.15;
+                    }
+                }
+                
+                // Check collision with power lines
+                if (line.dangerZones) {
+                    for (let zone of line.dangerZones) {
+                        if (checkCollision(player, zone)) {
+                            gameOver();
+                            return false;
+                        }
+                    }
+                }
+                
+                // Remove off-screen power lines
+                if (line.x < -100) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Update birds
+            birds = birds.filter(bird => {
+                bird.x -= bird.speed;
+                
+                // Check collision with bird
+                if (checkCollision(player, bird)) {
+                    gameOver();
+                    return false;
+                }
+                
+                // Remove off-screen birds
+                if (bird.x < -bird.width) {
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        // Draw game
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw clouds
+            clouds.forEach(cloud => {
+                drawCloud(cloud.x, cloud.y, cloud.width);
+            });
+            
+            // Draw birds
+            birds.forEach(bird => {
+                drawBird(bird);
+            });
+            
+            // Draw power lines
+            powerLines.forEach(line => {
+                drawPowerLine(line);
+            });
+            
+            // Draw player
+            drawDrone(player.x, player.y);
+            drawPig(player.x, player.y);
+            
+            // Draw buildings (in foreground)
+            buildings.forEach(building => {
+                drawBuilding(building);
+            });
+            
+            // Draw speech bubbles
+            speechBubbles.forEach(bubble => {
+                drawSpeechBubble(bubble);
+            });
+        }
+        
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            gameStarted = false;
+            
+            // Check for new high score
+            let isNewHighScore = false;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('pigDroneHighScore', highScore);
+                document.getElementById('highScore').textContent = 'High Score: ' + highScore;
+                isNewHighScore = true;
+            }
+            
+            document.getElementById('finalScore').textContent = 'Final Score: ' + score;
+            document.getElementById('newHighScore').style.display = isNewHighScore ? 'block' : 'none';
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // Start game
+        function startGame() {
+            gameRunning = true;
+            gameStarted = true;
+            score = 0;
+            gameSpeed = 2;
+            powerLines = [];
+            birds = [];
+            speechBubbles = [];
+            powerLineTimer = 0;
+            birdTimer = 0;
+            bubbleTimer = 0;
+            player.x = 150;
+            player.y = 300;
+            player.velocity = 0;
+            
+            // Reset buildings
+            buildings = [];
+            for (let i = 0; i < 8; i++) {
+                buildings.push({
+                    x: i * 150,
+                    height: 100 + Math.random() * 70,
+                    width: 80 + Math.random() * 40,
+                    color: '#' + Math.floor(Math.random()*16777215).toString(16),
+                    speed: 1.5
+                });
+            }
+            
+            document.getElementById('score').textContent = 'Score: 0';
+            gameLoop();
+        }
+        
+        // Restart game
+        function restartGame() {
+            document.getElementById('gameOver').style.display = 'none';
+            startGame();
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            if (gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Draw initial frame (don't start game automatically)
+        draw();
+    </script>
+</body>
+</html>
